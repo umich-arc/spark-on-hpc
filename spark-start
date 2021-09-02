@@ -1,0 +1,135 @@
+#!/bin/bash
+
+if [[ -z "${SLURM_JOB_ID}" ]]; then
+  echo "Error: This script should only be called from slurm script. It should not be called from a login node."
+  exit 1
+fi
+
+module load spark python3.8-anaconda pyarrow
+
+# Reserve cpu cores and memory resources on the slurm compute node that runs the 
+# spark driver. The total capacity of the spark cluster available for assignment
+# to executors will be reduced by the amount defined here. These values are a 
+# good starting point, but can be increased if 'out of memory' errors occur from
+# running a large spark driver (greater than 15 GB).
+export SPARK_OVERHEAD_CORES=2
+export SPARK_OVERHEAD_MEMORY=10
+
+# Set up local scratch directories on all the nodes with strict permissions
+export SCRATCH="/tmp/${SLURM_JOB_ID}"
+export SPARK_CONF_DIR="${SCRATCH}/conf"
+srun -l mkdir -p "${SPARK_CONF_DIR}" \
+    && srun -l mkdir "${SCRATCH}/logs" \
+    && srun -l mkdir "${SCRATCH}/work" \
+    && srun -l mkdir "${SCRATCH}/local" \
+    && srun -l mkdir "${SCRATCH}/pid" \
+    && srun -l mkdir "${SCRATCH}/tmp" \
+    && srun -l chmod -R 700 ${SCRATCH} \
+    || fail "Could not set up node local directories"
+
+# Set up standalone cluster daemon properties. The spark master and spark worker
+# processes will run with the resources defined here.
+export SPARK_DAEMON_MEMORY=1
+export SPARK_DAEMON_CORES=1
+
+# Set up master node properties
+export SPARK_MASTER_WEBUI_PORT=8080
+export SPARK_MASTER_HOST="${SLURMD_NODENAME}.arc-ts.umich.edu"
+export SPARK_MASTER_PORT=7077
+export SPARK_MASTER_URL="spark://${SPARK_MASTER_HOST}:${SPARK_MASTER_PORT}"
+export SPARK_MASTER_WEBUI="http://${SPARK_MASTER_HOST}:${SPARK_MASTER_WEBUI_PORT}"
+export SPARK_LOG_DIR="${SCRATCH}/logs"
+export SPARK_WORKER_DIR="${SCRATCH}/work"
+
+# Set up worker node properties. The capapcity of each worker node in the spark
+# cluster is defined here. The values are computed from the resources allocated
+# by slurm.
+SPARK_WORKER_CORES=$(($SLURM_NTASKS_PER_NODE * $SLURM_CPUS_PER_TASK))
+SPARK_WORKER_MEMORY=$(($SLURM_MEM_PER_NODE / $SLURM_NTASKS_PER_NODE / 1024))
+
+# Generate shared secret for spark authentication
+SPARK_SECRET=$(openssl rand -base64 32)
+
+# create config files with strict permissions
+touch ${SCRATCH}/tmp/spark-defaults.conf ${SCRATCH}/tmp/spark-env.sh
+chmod 700 ${SCRATCH}/tmp/spark-defaults.conf ${SCRATCH}/tmp/spark-env.sh
+
+# create spark-defaults config file in tmp dir
+cat > "${SCRATCH}/tmp/spark-defaults.conf" <<EOF
+# Enable RPC Authentication
+spark.authenticate                 true
+spark.authenticate.secret          ${SPARK_SECRET}
+
+# Disable job killing from Spark UI. By default, the web UI
+# is not protected by authentication which means any user
+# with network access could terminate jobs if this was enabled.
+spark.ui.killEnabled               false
+EOF
+
+# create spark-env config file in tmp dir
+cat > "${SCRATCH}/tmp/spark-env.sh" <<EOF 
+SPARK_WORKER_CORES=${SPARK_WORKER_CORES}
+SPARK_WORKER_MEMORY=${SPARK_WORKER_MEMORY}g
+SPARK_WORKER_DIR=${SCRATCH}/work
+SPARK_LOCAL_DIRS=${SCRATCH}/local
+SPARK_DAEMON_MEMORY=${SPARK_DAEMON_MEMORY}g
+SPARK_LOG_DIR=${SCRATCH}/logs
+SPARK_PID_DIR=${SCRATCH}/pid
+SPARK_MASTER_WEBUI_PORT=${SPARK_MASTER_WEBUI_PORT}
+SPARK_MASTER_HOST=${SPARK_MASTER_HOST}
+SPARK_MASTER_PORT=${SPARK_MASTER_PORT}
+EOF
+
+# broadcast config files to each node
+sbcast ${SCRATCH}/tmp/spark-defaults.conf ${SPARK_CONF_DIR}/spark-defaults.conf \
+    || fail "Could not broadcast spark-defaults.conf file to nodes"
+sbcast ${SCRATCH}/tmp/spark-env.sh ${SPARK_CONF_DIR}/spark-env.sh \
+    || fail "Could not broadcast spark-env.sh file to nodes"
+rm -f ${SCRATCH}/tmp/spark-defaults.conf ${SCRATCH}/tmp/spark-env.sh
+
+# Reserve some resources on the node where this script is executed for the spark
+# driver. To avoid resource exhaustion, reduce the amount of resources that are
+# available for assignment to executors by the overhead amount.
+if [ ${SPARK_WORKER_CORES} -ge ${SPARK_OVERHEAD_CORES} ] && [ ${SPARK_WORKER_MEMORY} -ge ${SPARK_OVERHEAD_MEMORY} ]; then
+    SPARK_WORKER_CORES_REMAINING=$((${SPARK_WORKER_CORES} - ${SPARK_OVERHEAD_CORES}))
+    SPARK_WORKER_MEMORY_REMAINING=$((${SPARK_WORKER_MEMORY} - ${SPARK_OVERHEAD_MEMORY}))
+    sed -i 's/SPARK_WORKER_CORES='${SPARK_WORKER_CORES}'/SPARK_WORKER_CORES='${SPARK_WORKER_CORES_REMAINING}'/;
+            s/SPARK_WORKER_MEMORY='${SPARK_WORKER_MEMORY}'g/SPARK_WORKER_MEMORY='${SPARK_WORKER_MEMORY_REMAINING}'g/' \
+        "${SPARK_CONF_DIR}/spark-env.sh"
+else
+    echo "Error: The slurm node running the spark driver does not have enough resources. The spark cluster did not start."
+    exit
+fi
+
+# create a starter script for non-daemonized spark workers
+cat > ${SCRATCH}/tmp/sparkworker.sh <<EOF
+#! /bin/bash
+ulimit -u 16384 -n 16384
+export SPARK_CONF_DIR=${SPARK_CONF_DIR}
+logf="${SCRATCH}/logs/spark-worker-\$(hostname).out"
+exec spark-class org.apache.spark.deploy.worker.Worker "${SPARK_MASTER_URL}" &> "\${logf}"
+EOF
+
+chmod +x ${SCRATCH}/tmp/sparkworker.sh
+sbcast ${SCRATCH}/tmp/sparkworker.sh "${SCRATCH}/sparkworker.sh" \
+    || fail "Could not broadcast worker start script to nodes"
+rm -f ${SCRATCH}/tmp/sparkworker.sh
+
+# Start the master node
+${SPARK_HOME}/sbin/start-master.sh
+echo ${SPARK_MASTER_HOST} > master.txt
+
+# Create another config file in working dir with important
+# env vars that can be sourced after spark cluster is started.
+cat > spark-env.sh <<EOF
+export SPARK_MASTER_URL=${SPARK_MASTER_URL}
+export SPARK_CONF_DIR=${SPARK_CONF_DIR}
+export SPARK_MASTER_WEBUI=${SPARK_MASTER_WEBUI}
+export SPARK_MASTER_HOST=${SPARK_MASTER_HOST}
+EOF
+
+sleep 5
+
+# Start the worker nodes
+srun --label --wait=0 "${SCRATCH}/sparkworker.sh" &
+srun_pid=$!
