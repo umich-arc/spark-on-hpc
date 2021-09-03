@@ -2,10 +2,10 @@
 #SBATCH --job-name=spark-cluster-with-jupyter
 #SBATCH --account=support        # change to your account
 #SBATCH --partition=standard
-#SBATCH --nodes=2                # node count, change as needed
+#SBATCH --nodes=1                # node count, change as needed
 #SBATCH --ntasks-per-node=1      # do not change, leave as 1 task per node
-#SBATCH --cpus-per-task=36       # cpu-cores per task per node, change as needed
-#SBATCH --mem=180g               # memory per node, change as needed
+#SBATCH --cpus-per-task=18       # cpu-cores per task per node, change as needed
+#SBATCH --mem=90g               # memory per node, change as needed
 #SBATCH --time=00:60:00
 #SBATCH --mail-type=NONE
 
