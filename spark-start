@@ -44,8 +44,8 @@ export SPARK_WORKER_DIR="${SCRATCH}/work"
 # Set up worker node properties. The capapcity of each worker node in the spark
 # cluster is defined here. The values are computed from the resources allocated
 # by slurm.
-SPARK_WORKER_CORES=$(($SLURM_NTASKS_PER_NODE * $SLURM_CPUS_PER_TASK))
-SPARK_WORKER_MEMORY=$(($SLURM_MEM_PER_NODE / $SLURM_NTASKS_PER_NODE / 1024))
+SPARK_WORKER_CORES=$((SLURM_NTASKS_PER_NODE * SLURM_CPUS_PER_TASK))
+SPARK_WORKER_MEMORY=$((SLURM_MEM_PER_NODE / SLURM_NTASKS_PER_NODE / 1024))
 
 # Generate shared secret for spark authentication
 SPARK_SECRET=$(openssl rand -base64 32)
@@ -91,10 +91,10 @@ rm -f ${SCRATCH}/tmp/spark-defaults.conf ${SCRATCH}/tmp/spark-env.sh
 # driver. To avoid resource exhaustion, reduce the amount of resources that are
 # available for assignment to executors by the overhead amount.
 if [ ${SPARK_WORKER_CORES} -ge ${SPARK_OVERHEAD_CORES} ] && [ ${SPARK_WORKER_MEMORY} -ge ${SPARK_OVERHEAD_MEMORY} ]; then
-    SPARK_WORKER_CORES_REMAINING=$((${SPARK_WORKER_CORES} - ${SPARK_OVERHEAD_CORES}))
-    SPARK_WORKER_MEMORY_REMAINING=$((${SPARK_WORKER_MEMORY} - ${SPARK_OVERHEAD_MEMORY}))
-    sed -i 's/SPARK_WORKER_CORES='${SPARK_WORKER_CORES}'/SPARK_WORKER_CORES='${SPARK_WORKER_CORES_REMAINING}'/;
-            s/SPARK_WORKER_MEMORY='${SPARK_WORKER_MEMORY}'g/SPARK_WORKER_MEMORY='${SPARK_WORKER_MEMORY_REMAINING}'g/' \
+    SPARK_WORKER_CORES_REMAINING=$((SPARK_WORKER_CORES - SPARK_OVERHEAD_CORES))
+    SPARK_WORKER_MEMORY_REMAINING=$((SPARK_WORKER_MEMORY - SPARK_OVERHEAD_MEMORY))
+    sed -i "s/SPARK_WORKER_CORES=${SPARK_WORKER_CORES}/SPARK_WORKER_CORES=${SPARK_WORKER_CORES_REMAINING}/;
+            s/SPARK_WORKER_MEMORY=${SPARK_WORKER_MEMORY}g/SPARK_WORKER_MEMORY=${SPARK_WORKER_MEMORY_REMAINING}g/" \
         "${SPARK_CONF_DIR}/spark-env.sh"
 else
     echo "Error: The slurm node running the spark driver does not have enough resources. The spark cluster did not start."
