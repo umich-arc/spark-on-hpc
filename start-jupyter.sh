@@ -15,8 +15,8 @@ do
   echo -n "."
   x=$(( $x + 1 ))
   if [ -f "$SLURM_LOG" ]; then
+    sleep 5
     if grep -q "http://gl" ${SLURM_LOG}; then
-      sleep 2
       JUPYTER_WEBUI=$(grep -m 1 "http://gl" ${SLURM_LOG} | sed 's/^.*http:/http:/g')
       x=$SLURM_TIMEOUT
     fi
