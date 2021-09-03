@@ -26,6 +26,3 @@ pyspark --master ${SPARK_MASTER_URL} \
   --executor-cores 1 \
   --executor-memory 5G \
   --total-executor-cores 70
-
-echo "***** Spark cluster is running. Access the Web UI at ${SPARK_MASTER_WEBUI}. *****"
-sleep infinity
