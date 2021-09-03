@@ -17,7 +17,7 @@ source spark-env.sh
 JUPYTER_PATH=$(which jupyter)
 JUPYTER_PORT=8888
 export PYSPARK_DRIVER_PYTHON=${JUPYTER_PATH}
-export PYSPARK_DRIVER_PYTHON_OPTS="notebook --no-browser --NotebookApp.ip='0.0.0.0' --port ${JUPYTER_PORT}"
+export PYSPARK_DRIVER_PYTHON_OPTS="notebook --no-browser --NotebookApp.ip='0.0.0.0' --notebook-dir ${HOME} --port ${JUPYTER_PORT}"
 
 echo "JUPYTER_WEBUI=http://${SPARK_MASTER_HOST}:${JUPYTER_PORT}" >> spark-env.sh
 
