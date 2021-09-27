@@ -27,7 +27,7 @@ vi jupyter-job.sh
 ```
 
 - After the spark cluster starts, copy the Jupyter URL.
-- Open a Great Lakes Remote Desktop session
+- Open a [Great Lakes Remote Desktop](https://greatlakes.arc-ts.umich.edu/pun/sys/dashboard/) session
 - Open the Firefox web browser
 - Paste the Jupyter URL in the browser
 
