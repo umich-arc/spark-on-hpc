@@ -1,6 +1,6 @@
 # Spark on Great Lakes
 
-These instructions show how to run Spark on Great Lakes. First, you need to clone this repo on Great Lakes to get a copy of the example slurm jobs scripts and the `spark-start` script. Next, you will customize the example slurm job scripts with your account name and the resources you require for your spark job. Lastly, you will run the slurm job script which will call the `spark-start` script which launches a standalone Spark cluster for your use. The `advanced-examples` directory contains some example code.
+These instructions show how to run Spark on Great Lakes. First, you need to clone this repo on Great Lakes to get a copy of the example slurm jobs scripts and the `spark-start` script. Next, you will customize the example slurm job scripts with your account name and the resources you require for your spark job. Lastly, you will run the slurm job script which will call the `spark-start` script which launches a standalone Spark cluster for your use. The `examples` directory contains some example code.
 
 Spark jobs can be run either interactively, as with Jupyter Notebook, `pyspark` and other tools, or run as a batch job with `spark-submit`. The different approaches are shown below.
 
@@ -10,7 +10,6 @@ Spark jobs can be run either interactively, as with Jupyter Notebook, `pyspark` 
 ssh greatlakes.arc-ts.umich.edu
 git clone git@github.com:arc-ts/spark-on-great-lakes.git
 cd ./spark-on-great-lakes
-git submodule update --init
 ```
 
 ## Running a Jupyter Notebook
