@@ -1,8 +1,10 @@
 # Spark on Great Lakes
 
-These instructions show how to run Spark on Great Lakes. First, you need to clone this repo on Great Lakes to get a copy of the example slurm jobs scripts and the `spark-start` script. Next, you will customize the example slurm job scripts with your account name and the resources you require for your spark job. Lastly, you will run the slurm job script which will call the `spark-start` script which launches a standalone Spark cluster for your use. The `examples` directory contains some example code.
+These instructions show how to run Spark on Great Lakes from the command line. If instead, you are looking to run a Jupyter Notebook with Spark integration, please use the Open OnDemand Jupyter + Spark app available through a web browser at https://greatlakes.arc-ts.umich.edu.
 
-Spark jobs can be run either interactively, as with Jupyter Notebook, `pyspark` and other tools, or run as a batch job with `spark-submit`. The different approaches are shown below.
+To run Spark on Great Lakes from the command line, first, you need to clone this repo on Great Lakes to get a copy of the example slurm jobs scripts and the `spark-start` script. Next, you will customize the example slurm job scripts with your account name and the resources you require for your spark job. Lastly, you will run the slurm job script which will call the `spark-start` script which launches a standalone Spark cluster for your use. The `examples` directory contains some example code.
+
+Spark jobs can be run either interactively, as with `pyspark` and other tools, or run as a batch job with `spark-submit`. The different approaches are shown below.
 
 ## Clone This Repo
 
@@ -11,24 +13,6 @@ ssh greatlakes.arc-ts.umich.edu
 git clone git@github.com:arc-ts/spark-on-great-lakes.git
 cd ./spark-on-great-lakes
 ```
-
-## Running a Jupyter Notebook
-
-```bash
-# Start on the Great Lakes login node. Clone this repo and cd to the repo.
-
-# Customize the slurm job script to use your Great Lakes account and
-# modify the compute resources to match your needs.
-vi jupyter-job.sh
-
-# Run the helper script which will start the spark cluster and jupyter notebook.
-./start-jupyter.sh
-```
-
-- After the spark cluster starts, copy the Jupyter URL.
-- Open a [Great Lakes Remote Desktop](https://greatlakes.arc-ts.umich.edu/pun/sys/dashboard/) session
-- Open the Firefox web browser
-- Paste the Jupyter URL in the browser
 
 ## Running an Interactive Job
 
