@@ -5,7 +5,16 @@ if [[ -z "${SLURM_JOB_ID}" ]]; then
   exit 1
 fi
 
-module load spark python3.8-anaconda pyarrow
+################################################################################
+# Set up and launch standalone Spark cluster
+################################################################################
+
+module load spark/3.1.2 pyarrow/5.0.0 python3.8-anaconda/2021.05
+
+# Set up standalone cluster daemon properties. The spark master and spark worker
+# processes will run with the resources defined here.
+export SPARK_DAEMON_CORES=1
+export SPARK_DAEMON_MEMORY=1
 
 # Reserve cpu cores and memory resources on the slurm compute node that runs the 
 # spark driver. The total capacity of the spark cluster available for assignment
@@ -26,11 +35,6 @@ srun -l mkdir -p "${SPARK_CONF_DIR}" \
     && srun -l mkdir "${SCRATCH}/tmp" \
     && srun -l chmod -R 700 ${SCRATCH} \
     || fail "Could not set up node local directories"
-
-# Set up standalone cluster daemon properties. The spark master and spark worker
-# processes will run with the resources defined here.
-export SPARK_DAEMON_MEMORY=1
-export SPARK_DAEMON_CORES=1
 
 # Set up master node properties
 export SPARK_MASTER_WEBUI_PORT=8080
