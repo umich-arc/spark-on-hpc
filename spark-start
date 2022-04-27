@@ -40,7 +40,7 @@ srun --label --export=ALL mkdir -p -m 700 \
     || fail "Could not set up node local directories"
 
 # Create spark directory structure in ood job directory for global settings.
-export OOD_JOB_HOME="${HOME}/.spark-local/${SLURM_JOB_ID}/"
+export OOD_JOB_HOME="${HOME}/.spark-local/${SLURM_JOB_ID}"
 mkdir -p "${OOD_JOB_HOME}/spark/conf" \
          "${OOD_JOB_HOME}/spark/pid" \
          "${OOD_JOB_HOME}/spark/logs" \
@@ -94,11 +94,12 @@ EOF
 
 # Create spark-env config file.
 cat > "${SPARK_CONF_DIR}/spark-env.sh" <<EOF
-SPARK_WORKER_DIR=${SPARK_WORKER_DIR}
-SPARK_LOCAL_DIRS=${SPARK_LOCAL_DIRS}
-SPARK_DAEMON_MEMORY=${SPARK_DAEMON_MEMORY}g
-SPARK_LOG_DIR=${SPARK_LOG_DIR}
-SPARK_PID_DIR=${SPARK_PID_DIR}
+export SPARK_WORKER_DIR=${SPARK_WORKER_DIR}
+export SPARK_LOCAL_DIRS=${SPARK_LOCAL_DIRS}
+export SPARK_DAEMON_MEMORY=${SPARK_DAEMON_MEMORY}g
+export SPARK_LOG_DIR=${SPARK_LOG_DIR}
+export SPARK_PID_DIR=${SPARK_PID_DIR}
+export SPARK_CONF_DIR=${SPARK_CONF_DIR}
 EOF
 
 # A worker process runs on each available slurm node, but the spark driver
