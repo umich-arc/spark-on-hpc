@@ -12,7 +12,7 @@
 module load spark python3.8-anaconda pyarrow
 
 ./spark-start
-source spark-env.sh
+source ${HOME}/.spark-local/${SLURM_JOB_ID}/spark/conf/spark-env.sh
 
 echo "***** Spark cluster is running. Access the Web UI at ${SPARK_MASTER_WEBUI}. *****"
 sleep infinity
