@@ -171,10 +171,13 @@ while ! grep -q "started at http://" ${SPARK_MASTER_LOG}; do
     LOOP_COUNT=$(( LOOP_COUNT + 1 ))
 done
 
-# Get URL and ports from log file.
+# Get URL and ports from log file and add to spark-env.sh.
 # TODO: What if spark log format changes? Will https on master UI break pattern matching below?
 SPARK_MASTER_URL=$(grep -m 1 "spark://" ${SPARK_MASTER_LOG} | sed "s/^.*spark:\/\//spark:\/\//")
 SPARK_MASTER_WEBUI=$(grep -i -m 1 "started at http://" ${SPARK_MASTER_LOG} | sed "s/^.*http:\/\//http:\/\//")
+echo "export SPARK_MASTER_URL=${SPARK_MASTER_URL}" >> ${SPARK_CONF_DIR}/spark-env.sh
+echo "export SPARK_MASTER_WEBUI=${SPARK_MASTER_WEBUI}" >> ${SPARK_CONF_DIR}/spark-env.sh
+
 
 # Log these values for troubleshooting.
 echo "SPARK_MASTER_URL: ${SPARK_MASTER_URL}"
