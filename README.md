@@ -23,8 +23,8 @@ cd ./spark-on-great-lakes
 # modify the slurm compute resources to match your needs.
 vi interactive-job.sh
 
-# Run the slurm job script which will start the spark cluster.
-sbatch ./interactive-job.sh
+# Run the slurm job script which will start the spark cluster. Keep the slurm job id as env var.
+SPARK_JOB_ID=$(sbatch --parsable ./interactive-job.sh)
 
 # Wait a few seconds for the spark cluster to start, then SSH to the spark master node.
 ssh $(cat ./master.txt)
@@ -34,7 +34,7 @@ module load spark python3.8-anaconda pyarrow
 
 # Source this script to set some useful env vars related to the spark cluster.
 cd spark-on-great-lakes
-source spark-env.sh
+source ~/.spark-local/${SPARK_JOB_ID}/spark/conf/spark-env.sh
 
 # Run pyspark to connect to the cluster and perform your work.
 # If needed, modify the pyspark resources below to match the slurm resources.
