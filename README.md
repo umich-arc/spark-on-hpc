@@ -15,7 +15,7 @@ cd ./spark-on-great-lakes
 
 ## Running a Batch Job
 
-Next, you will need to write a slurm job script that calls `spart-start`. It is recommended that you copy the example script `batch-job.sh` and customize it for your use. You need to update the slurm information to use your Great Lakes or Armis2 account as well as specify the resources you wish to allocate to your Spark cluster.
+Next, you will need to write a slurm job script that calls `spark-start`. It is recommended that you copy the example script `batch-job.sh` and customize it for your use. You need to update the slurm information to use your Great Lakes or Armis2 account as well as specify the resources you wish to allocate to your Spark cluster.
 
 The `batch-job.sh` file ends with a `spark-submit` command that will submit a batch job to your Spark cluster. You must modify this command to reference your spark job code. Additionally, you must modify the command line options `--executor-cores`, `--executor-memory`, and `--total-executor-cores` to explicitly specify the resources you desire for your spark job. Otherwise, your job may have significantly fewer resources than you intended because these parameters have low default values. Typically, you will set these parameter values to be slightly less than the resources requested in your slurm job script to allow for spark overhead. As a rule of thumb, the spark cluster consumes roughly 2 cpu cores and 10g overhead. Additional details on resource allocation are later in this document.
 
