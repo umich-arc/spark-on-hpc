@@ -9,52 +9,48 @@ The examples are provided as a single Jupyter Notebook `examples-notebook.ipynb`
 In addition to the Jupyter Notebook, the examples can also be run individually from the command line as below.
 
 ```bash
-# Start an interactive spark cluster on Great Lakes using the README
-# instructions from https://github.com/arc-ts/spark-on-great-lakes.
-
-# Submit jobs with spark-submit.
-spark-submit --master ${SPARK_MASTER_URL} \
-  --executor-cores 1 \
-  --executor-memory 5G \
-  --total-executor-cores 70 \
-  ./advanced-examples/pi.py 1500
-
-spark-submit --master ${SPARK_MASTER_URL} \
-  --executor-cores 1 \
-  --executor-memory 5G \
-  --total-executor-cores 70 \
-  ./advanced-examples/word-count.py /nfs/turbo/arcts-data-hadoop-stage/data/Gutenberg.txt
-
-spark-submit --master ${SPARK_MASTER_URL} \
-  --executor-cores 1 \
-  --executor-memory 5G \
-  --total-executor-cores 70 \
-  ./advanced-examples/numpy-test.py
-
-spark-submit --master ${SPARK_MASTER_URL} \
-  --executor-cores 1 \
-  --executor-memory 5G \
-  --total-executor-cores 70 \
-  ./advanced-examples/numeric-integration.py
-
 spark-submit --master ${SPARK_MASTER_URL} \
   --executor-cores 1 \
   --executor-memory 10G \
   --total-executor-cores 35 \
-  ./advanced-examples/logistic_regression_with_lbfgs_example.py /nfs/turbo/arcts-data-hadoop-stage/data/sample_svm_data.txt
+  ./examples/logistic_regression_with_lbfgs_example.py
 
 spark-submit --master ${SPARK_MASTER_URL} \
   --executor-cores 1 \
   --executor-memory 5G \
   --total-executor-cores 70 \
-  ./advanced-examples/nltk-test.py /nfs/turbo/arcts-data-hadoop-stage/data/complete-works-of-shakespeare.txt
+  ./examples/nltk-test.py
+
+spark-submit --master ${SPARK_MASTER_URL} \
+  --executor-cores 1 \
+  --executor-memory 5G \
+  --total-executor-cores 70 \
+  ./examples/numeric-integration.py
+
+spark-submit --master ${SPARK_MASTER_URL} \
+  --executor-cores 1 \
+  --executor-memory 5G \
+  --total-executor-cores 70 \
+  ./examples/numpy-test.py
+
+spark-submit --master ${SPARK_MASTER_URL} \
+  --executor-cores 1 \
+  --executor-memory 5G \
+  --total-executor-cores 70 \
+  ./examples/pi.py 1500
 
 # This example only works if you have read permission to the twitter decahose on Great Lakes.
 spark-submit --master ${SPARK_MASTER_URL} \
   --executor-cores 1 \
   --executor-memory 5G \
   --total-executor-cores 70 \
-  ./advanced-examples/twitter-decahose-test.py /nfs/turbo/twitter-decahose/decahose/raw/decahose.2020-05-25.p1.bz2
+  ./examples/twitter-decahose-test.py /nfs/turbo/twitter-decahose/decahose/raw/decahose.2020-05-25.p1.bz2
+
+spark-submit --master ${SPARK_MASTER_URL} \
+  --executor-cores 1 \
+  --executor-memory 5G \
+  --total-executor-cores 70 \
+  ./examples/word-count.py /nfs/turbo/arcts-data-hadoop-stage/data/Gutenberg.txt
 ```
 
 ## Cavium ThunderX Usage
