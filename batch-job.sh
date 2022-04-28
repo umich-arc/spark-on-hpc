@@ -19,10 +19,9 @@ module load spark python3.8-anaconda pyarrow
 source ${HOME}/.spark-local/${SLURM_JOB_ID}/spark/conf/spark-env.sh
 
 # Customize the executor resources below to match resources requested above
-# with an allowance for spark driver overhead.
-# Also change the path to your spark job.
+# with an allowance for spark driver overhead. Also change the path to your spark job.
 spark-submit --master ${SPARK_MASTER_URL} \
   --executor-cores 1 \
   --executor-memory 5G \
   --total-executor-cores 70 \
-  ${SPARK_HOME}/examples/src/main/python/pi.py 10000
+  examples/pi.py
