@@ -59,4 +59,4 @@ In the example above, this would leave 70 cpu cores and 350g memory available fo
 
 ## Security
 
-The `spark-start` script will enables RPC authentication and generate a random secret that is distributed to the worker nodes. In order to submit jobs to the cluster, a user must have this secret. These secrets are added to the environment when `batch-jobs.sh` sources `spark-env.sh`.
+The `spark-start` script enables RPC authentication to protect the spark service.
