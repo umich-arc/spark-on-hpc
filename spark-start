@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ -z "${SLURM_JOB_ID}" ]]; then
-  echo "Error: This script should only be called from slurm script. It should not be called from a login node."
+  echo "Error: This script should only be called from slurm script. It appears this is not a slurm job."
   exit 1
 fi
 
@@ -17,10 +17,10 @@ export SPARK_DAEMON_CORES=1
 export SPARK_DAEMON_MEMORY=1
 
 # Define static driver and executor resources here.
-export SPARK_DRIVER_CORES=4
-export SPARK_DRIVER_MEMORY=2
-export SPARK_EXECUTOR_CORES=4
-export SPARK_EXECUTOR_MEMORY=26
+export SPARK_DRIVER_CORES=2
+export SPARK_DRIVER_MEMORY=5
+#export SPARK_EXECUTOR_CORES=4
+#export SPARK_EXECUTOR_MEMORY=26
 
 # Reserve cpu cores and memory resources on the slurm compute node that runs the
 # spark driver. The total capacity of the spark cluster available for assignment
@@ -52,7 +52,7 @@ export SPARK_WORKER_DIR="${OOD_JOB_HOME}/spark/logs"  # executor logs
 export SPARK_PID_DIR="${OOD_JOB_HOME}/spark/pid"      # master process pid
 export SPARK_LOCAL_DIRS="${SCRATCH}/local"            # driver and executor scratch space
 
-# Set up worker node properties. The capapcity of each worker node in the spark
+# Set up worker node properties. The capacity of each worker node in the spark
 # cluster is defined here. The resources defined in the slurm job resources are
 # to compute the resources available to the spark worker nodes.
 SPARK_WORKER_CORES=${SLURM_CPUS_PER_TASK}
@@ -114,37 +114,54 @@ else
     exit 1
 fi
 
+# ----
+# Apr 28, 2022 - Removing much of this section for now. It was intented to prevent
+# resource wasting by giving warning messages when cpu to memory ratio of
+# slurm job and spark executor configurations were mismatched. Despite this
+# intention, the code is overly complex and makes assumptions about the
+# users executor configurations that cannot be known before the script is
+# run. Keeping the code for now because it may be useful with OOD app. I will
+# keep the calculation of the total cluster capacity and write it to
+# spark-env.sh so that the OOD app will know how many executors it can run.
+# ----
+SPARK_CLUSTER_CORES=$(( SPARK_WORKER_CORES_REMAINING + (SLURM_JOB_NUM_NODES - 1) * SPARK_WORKER_CORES ))
+SPARK_CLUSTER_MEMORY=$(( SPARK_WORKER_MEMORY_REMAINING + (SLURM_JOB_NUM_NODES - 1) * SPARK_WORKER_MEMORY ))
+echo "Spark cluster total capacity available for executors:"
+echo "  - ${SPARK_CLUSTER_CORES} cores"
+echo "  - ${SPARK_CLUSTER_MEMORY}G memory"
+echo "export SPARK_CLUSTER_CORES=${SPARK_CLUSTER_CORES}" >> ${SPARK_CONF_DIR}/spark-env.sh
+echo "export SPARK_CLUSTER_MEMORY=${SPARK_CLUSTER_MEMORY}" >> ${SPARK_CONF_DIR}/spark-env.sh
 # Calculate the total spark cluster capacity. Then compute the maximum number
 # of executors that the Spark cluster can support by cores and by memory. The
 # smaller of these will be the final number of executors that will be run. Give
 # warnings if compute resources are being wasted. Also warn if cluster cannot
 # run 3 or more executors.
-SPARK_CLUSTER_CORES=$(( SPARK_WORKER_CORES_REMAINING + (SLURM_JOB_NUM_NODES - 1) * SPARK_WORKER_CORES ))
-SPARK_CLUSTER_MEMORY=$(( SPARK_WORKER_MEMORY_REMAINING + (SLURM_JOB_NUM_NODES - 1) * SPARK_WORKER_MEMORY ))
-SPARK_MAX_NUM_EXECUTOR_BY_CORES=$(( SPARK_CLUSTER_CORES / SPARK_EXECUTOR_CORES ))
-SPARK_MAX_NUM_EXECUTOR_BY_MEMORY=$(( SPARK_CLUSTER_MEMORY / SPARK_EXECUTOR_MEMORY ))
-if [ ${SPARK_MAX_NUM_EXECUTOR_BY_CORES} -ne ${SPARK_MAX_NUM_EXECUTOR_BY_MEMORY} ]; then
-    echo "Warning: There is a resource mismatch."
-    echo "Executor configuration:"
-    echo "  - ${SPARK_EXECUTOR_CORES} cores"
-    echo "  - ${SPARK_EXECUTOR_MEMORY}G memory"
-    echo "Spark cluster total capacity for executors:"
-    echo "  - ${SPARK_CLUSTER_CORES} cores"
-    echo "  - ${SPARK_CLUSTER_MEMORY}G memory"
-    echo "Spark cluster has capacity to run the lesser of ${SPARK_MAX_NUM_EXECUTOR_BY_CORES} or ${SPARK_MAX_NUM_EXECUTOR_BY_MEMORY} executors."
-    echo "Consider adjusting the spark cluster or executor configuration to avoid wasting resources."
-    if [ ${SPARK_MAX_NUM_EXECUTOR_BY_MEMORY} -lt ${SPARK_MAX_NUM_EXECUTOR_BY_CORES} ]; then
-        SPARK_MAX_NUM_EXECUTOR=${SPARK_MAX_NUM_EXECUTOR_BY_MEMORY}
-    else
-        SPARK_MAX_NUM_EXECUTOR=${SPARK_MAX_NUM_EXECUTOR_BY_CORES}
-    fi
-else
-    SPARK_MAX_NUM_EXECUTOR=${SPARK_MAX_NUM_EXECUTOR_BY_CORES}
-fi
-if [ ${SPARK_MAX_NUM_EXECUTOR} -lt 3 ]; then
-    echo "Warning: The spark cluster does not have enough resources to run 3 or more executors."
-fi
-SPARK_TOTAL_EXECUTOR_CORES=$(( SPARK_MAX_NUM_EXECUTOR * SPARK_EXECUTOR_CORES ))
+#SPARK_CLUSTER_CORES=$(( SPARK_WORKER_CORES_REMAINING + (SLURM_JOB_NUM_NODES - 1) * SPARK_WORKER_CORES ))
+#SPARK_CLUSTER_MEMORY=$(( SPARK_WORKER_MEMORY_REMAINING + (SLURM_JOB_NUM_NODES - 1) * SPARK_WORKER_MEMORY ))
+#SPARK_MAX_NUM_EXECUTOR_BY_CORES=$(( SPARK_CLUSTER_CORES / SPARK_EXECUTOR_CORES ))
+#SPARK_MAX_NUM_EXECUTOR_BY_MEMORY=$(( SPARK_CLUSTER_MEMORY / SPARK_EXECUTOR_MEMORY ))
+#if [ ${SPARK_MAX_NUM_EXECUTOR_BY_CORES} -ne ${SPARK_MAX_NUM_EXECUTOR_BY_MEMORY} ]; then
+#    echo "Warning: There is a resource mismatch."
+#    echo "Executor configuration:"
+#    echo "  - ${SPARK_EXECUTOR_CORES} cores"
+#    echo "  - ${SPARK_EXECUTOR_MEMORY}G memory"
+#    echo "Spark cluster total capacity for executors:"
+#    echo "  - ${SPARK_CLUSTER_CORES} cores"
+#    echo "  - ${SPARK_CLUSTER_MEMORY}G memory"
+#    echo "Spark cluster has capacity to run the lesser of ${SPARK_MAX_NUM_EXECUTOR_BY_CORES} or ${SPARK_MAX_NUM_EXECUTOR_BY_MEMORY} executors."
+#    echo "Consider adjusting the spark cluster or executor configuration to avoid wasting resources."
+#    if [ ${SPARK_MAX_NUM_EXECUTOR_BY_MEMORY} -lt ${SPARK_MAX_NUM_EXECUTOR_BY_CORES} ]; then
+#        SPARK_MAX_NUM_EXECUTOR=${SPARK_MAX_NUM_EXECUTOR_BY_MEMORY}
+#    else
+#        SPARK_MAX_NUM_EXECUTOR=${SPARK_MAX_NUM_EXECUTOR_BY_CORES}
+#    fi
+#else
+#    SPARK_MAX_NUM_EXECUTOR=${SPARK_MAX_NUM_EXECUTOR_BY_CORES}
+#fi
+#if [ ${SPARK_MAX_NUM_EXECUTOR} -lt 3 ]; then
+#    echo "Warning: The spark cluster does not have enough resources to run 3 or more executors."
+#fi
+#SPARK_TOTAL_EXECUTOR_CORES=$(( SPARK_MAX_NUM_EXECUTOR * SPARK_EXECUTOR_CORES ))
 
 # Start the master process and get its log file.
 START_OUTPUT=$(${SPARK_HOME}/sbin/start-master.sh)
