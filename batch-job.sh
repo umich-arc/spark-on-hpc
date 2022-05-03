@@ -9,18 +9,19 @@
 #SBATCH --time=00:60:00
 #SBATCH --mail-type=NONE
 
+# These modules are required.
 module load spark python3.8-anaconda pyarrow
 
+# Start the Spark instance.
 ./spark-start
-source spark-env.sh
 
-echo "***** Spark cluster is running. Access the Web UI at ${SPARK_MASTER_WEBUI}. *****"
+# Source spark-env.sh to get useful env variables.
+source ${HOME}/.spark-local/${SLURM_JOB_ID}/spark/conf/spark-env.sh
 
-# Change executor resources below to match resources requested above
-# with an allowance for spark driver overhead.
-# Change the path to your spark job.
+# Customize the executor resources below to match resources requested above
+# with an allowance for spark driver overhead. Also change the path to your spark job.
 spark-submit --master ${SPARK_MASTER_URL} \
   --executor-cores 1 \
   --executor-memory 5G \
   --total-executor-cores 70 \
-  ${SPARK_HOME}/examples/src/main/python/pi.py 10000
+  examples/pi.py
