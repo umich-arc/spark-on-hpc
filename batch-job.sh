@@ -24,4 +24,4 @@ spark-submit --master ${SPARK_MASTER_URL} \
   --executor-cores 1 \
   --executor-memory 5G \
   --total-executor-cores 70 \
-  examples/pi.py
+  /sw/examples/spark/spark-on-hpc/examples/pi.py
