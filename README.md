@@ -1,30 +1,22 @@
 # Spark on Great Lakes and Armis2
 
-These instructions show how to run a stand-alone Spark instance on the Great Lakes and Armis2 HPC clusters. This code is intended for researchers who need to submit a batch job to Spark and are comfortable with the technical details of sizing a stand-alone Spark instance. If instead, you are looking to interactively explore data through a Jupyter Notebook with Spark integration without a large learning curve, please use the Open OnDemand Jupyter + Spark app available through a web browser at https://greatlakes.arc-ts.umich.edu.
+These instructions show how to run a stand-alone Spark instance on the Great Lakes and Armis2 HPC clusters. This code is intended for researchers who need to submit a batch job to Spark and are comfortable with the technical details of sizing a stand-alone Spark instance. If instead, you are looking to interactively explore data through a Jupyter Notebook with Spark integration without a large learning curve, please use the Open OnDemand Jupyter + Spark app available through a web browser at https://greatlakes.arc-ts.umich.edu or https://armis2.arc-ts.umich.edu.
 
-To launch a Spark instance on an HPC cluster, first, you need to clone this repo on Great Lakes to get a copy of the example slurm jobs scripts and the `spark-start` script. Next, you will customize the example slurm job scripts with your account name and the resources you require for your spark job. Lastly, you will run the slurm job script which will call the `spark-start` script which launches a standalone Spark cluster for your use and then submit a batch job with `spark-submit`. The `examples` directory contains some example code.
+To launch a Spark instance on an HPC cluster, you need to copy the example slurm job script `batch-job.sh` and customize it with your slurm account name, the resources you require for your Spark job, and the location of your Spark code. Then, you will run the slurm job script with `sbatch batch-job.sh`. As the slurm job runs, it will call the `spark-start` script which launches a standalone Spark cluster and submits a Spark batch job with `spark-submit`. When the Spark job finishes, the slurm job will terminate. Spark driver logs are written to the slurm job's output log. The `examples` directory in this repo contains some example Spark code.
 
-## Clone This Repo
+## An Example
 
-```bash
-ssh greatlakes.arc-ts.umich.edu
-git clone git@github.com:arc-ts/spark-on-great-lakes.git
-cd ./spark-on-great-lakes
-```
+Copy and customize the `batch-job.sh` slurm job script to use your Great Lakes or Armis2 account as well as specify the resources you wish to allocate to your Spark cluster. Notice that the `batch-job.sh` file ends with a `spark-submit` command that will submit a batch job to your Spark cluster. You must modify this command to reference your Spark job code.
 
-
-## Running a Batch Job
-
-Next, you will need to write a slurm job script that calls `spark-start`. It is recommended that you copy the example script `batch-job.sh` and customize it for your use. You need to update the slurm information to use your Great Lakes or Armis2 account as well as specify the resources you wish to allocate to your Spark cluster.
-
-The `batch-job.sh` file ends with a `spark-submit` command that will submit a batch job to your Spark cluster. You must modify this command to reference your spark job code. Additionally, you must modify the command line options `--executor-cores`, `--executor-memory`, and `--total-executor-cores` to explicitly specify the resources you desire for your spark job. Otherwise, your job may have significantly fewer resources than you intended because these parameters have low default values. Typically, you will set these parameter values to be slightly less than the resources requested in your slurm job script to allow for spark overhead. As a rule of thumb, the spark cluster consumes roughly 2 cpu cores and 10g overhead. Additional details on resource allocation are later in this document.
+Additionally, you must modify the `spark-submit` command line options `--executor-cores`, `--executor-memory`, and `--total-executor-cores` to explicitly specify the resources you desire for your Spark job. Otherwise, your job may have significantly fewer resources than you intended because these parameters have low default values. Typically, you will set these parameter values to be slightly less than the resources requested in your slurm job script to allow for Spark overhead. As a rule of thumb, the Spark cluster consumes roughly 2 cpu cores and 10g overhead. Additional details on resource allocation are later in this document.
 
 ```bash
 # Copy and customize the slurm job script to match your needs.
-vi batch-job.sh
+cp /sw/examples/spark/spark-on-hpc/batch-job.sh ~/batch-job.sh
+vi ~/batch-job.sh
 
-# Run the slurm job script which will start the cluster then run your spark job.
-sbatch ./batch-job.sh
+# Run the slurm job script which will start the cluster then run your Spark job.
+sbatch ~/batch-job.sh
 
 # Optionally, view slurm output as the job runs.
 tail -f slurm*.out
@@ -32,7 +24,7 @@ tail -f slurm*.out
 
 ## Customizing Spark Driver Memory
 
-By default, a spark job will start a `driver` process using 5g of memory. If you need to increase the spark `driver` memory allocation, you can use the command line option `--driver-memory`. The example below launches a spark job with `driver` memory of 10g.
+By default, a Spark job will start a `driver` process using 5g of memory. If you need to increase the Spark `driver` memory allocation, you can use the command line option `--driver-memory`. The example below launches a Spark job with `driver` memory of 10g.
 
 ```bash
 spark-submit --master ${SPARK_MASTER_URL} \
@@ -45,7 +37,7 @@ spark-submit --master ${SPARK_MASTER_URL} \
 
 ## Cluster Architecture and Resource Allocation
 
-This section is provided if you would like a deeper understanding of the underlying architecture and resource allocation of the spark cluster. The `batch-job.sh` slurm job script is used as an example.
+This section is provided if you would like a deeper understanding of the underlying architecture and resource allocation of the Spark cluster. The `batch-job.sh` slurm job script is used as an example.
 
 The first section of the script request 2 compute nodes with 36 cores and 180 GB of memory for each node. When run, this script allocates 72 cores and 360 GB memory in total. (If you need more resources, you can increase the number of nodes. If you need less resources, you can reduce the number of nodes to 1.)
 
