@@ -13,7 +13,7 @@
 module load spark python3.8-anaconda pyarrow
 
 # Start the Spark instance.
-./spark-start
+spark-start
 
 # Source spark-env.sh to get useful env variables.
 source ${HOME}/.spark-local/${SLURM_JOB_ID}/spark/conf/spark-env.sh
