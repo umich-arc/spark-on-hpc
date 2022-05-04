@@ -13,7 +13,7 @@
 module load spark python3.8-anaconda pyarrow
 
 # Start the Spark instance.
-./spark-start
+spark-start
 
 # Source spark-env.sh to get useful env variables.
 source ${HOME}/.spark-local/${SLURM_JOB_ID}/spark/conf/spark-env.sh
@@ -24,4 +24,4 @@ spark-submit --master ${SPARK_MASTER_URL} \
   --executor-cores 1 \
   --executor-memory 5G \
   --total-executor-cores 70 \
-  examples/pi.py
+  /sw/examples/spark/spark-on-hpc/examples/pi.py
