@@ -9,7 +9,7 @@ fi
 # Set up and launch standalone Spark cluster
 ################################################################################
 
-module load spark/3.1.2 pyarrow/5.0.0 python3.8-anaconda/2021.05
+module load spark/3.2.1 python/3.10.4 pyarrow/8.0.0
 
 # Set up standalone cluster daemon properties. The spark master and spark worker
 # processes will run with the resources defined here.
