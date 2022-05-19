@@ -101,6 +101,7 @@ export SPARK_DAEMON_MEMORY=${SPARK_DAEMON_MEMORY}g
 export SPARK_LOG_DIR=${SPARK_LOG_DIR}
 export SPARK_PID_DIR=${SPARK_PID_DIR}
 export SPARK_CONF_DIR=${SPARK_CONF_DIR}
+export SCRATCH=${SCRATCH}
 EOF
 
 # A worker process runs on each available slurm node, but the spark driver
