@@ -32,7 +32,7 @@ export SPARK_OVERHEAD_MEMORY=${SPARK_DRIVER_MEMORY}
 # strict permissions for local settings.
 # TODO: Can this tmp dir be combined with XDG_RUNTIME_DIR above?
 export SCRATCH="$(mktemp -d ${USER}.XXXXXXXXXX -p /tmp)"
-echo "Writing spark tmp files to: ${SCRATCH}"
+echo "Writing spark tmp files to slurm compute nodes: ${SCRATCH}"
 srun --label --export=ALL mkdir -p -m 700 \
     "${SCRATCH}/local" \
     "${SCRATCH}/tmp"   \
@@ -41,6 +41,7 @@ srun --label --export=ALL mkdir -p -m 700 \
 
 # Create spark directory structure in ood job directory for global settings.
 export OOD_JOB_HOME="${HOME}/.spark-local/${SLURM_JOB_ID}"
+echo "Writing spark job files to user's HOME: ${HOME}/.spark-local/${SLURM_JOB_ID}/spark"
 mkdir -p "${OOD_JOB_HOME}/spark/conf" \
          "${OOD_JOB_HOME}/spark/pid" \
          "${OOD_JOB_HOME}/spark/logs" \
