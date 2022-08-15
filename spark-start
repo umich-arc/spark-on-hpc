@@ -9,7 +9,7 @@ fi
 # Set up and launch standalone Spark cluster
 ################################################################################
 
-module load spark/3.1.2 pyarrow/5.0.0 python3.8-anaconda/2021.05
+module load spark/3.2.1 python/3.10.4 pyarrow/8.0.0
 
 # Set up standalone cluster daemon properties. The spark master and spark worker
 # processes will run with the resources defined here.
@@ -32,7 +32,7 @@ export SPARK_OVERHEAD_MEMORY=${SPARK_DRIVER_MEMORY}
 # strict permissions for local settings.
 # TODO: Can this tmp dir be combined with XDG_RUNTIME_DIR above?
 export SCRATCH="$(mktemp -d ${USER}.XXXXXXXXXX -p /tmp)"
-echo "Writing spark tmp files to: ${SCRATCH}"
+echo "Writing spark tmp files to slurm compute nodes: ${SCRATCH}"
 srun --label --export=ALL mkdir -p -m 700 \
     "${SCRATCH}/local" \
     "${SCRATCH}/tmp"   \
@@ -41,6 +41,7 @@ srun --label --export=ALL mkdir -p -m 700 \
 
 # Create spark directory structure in ood job directory for global settings.
 export OOD_JOB_HOME="${HOME}/.spark-local/${SLURM_JOB_ID}"
+echo "Writing spark job files to user's HOME: ${HOME}/.spark-local/${SLURM_JOB_ID}/spark"
 mkdir -p "${OOD_JOB_HOME}/spark/conf" \
          "${OOD_JOB_HOME}/spark/pid" \
          "${OOD_JOB_HOME}/spark/logs" \
@@ -100,6 +101,7 @@ export SPARK_DAEMON_MEMORY=${SPARK_DAEMON_MEMORY}g
 export SPARK_LOG_DIR=${SPARK_LOG_DIR}
 export SPARK_PID_DIR=${SPARK_PID_DIR}
 export SPARK_CONF_DIR=${SPARK_CONF_DIR}
+export SCRATCH=${SCRATCH}
 EOF
 
 # A worker process runs on each available slurm node, but the spark driver
@@ -227,3 +229,4 @@ sed -i "s/SPARK_WORKER_CORES=${SPARK_WORKER_CORES}/SPARK_WORKER_CORES=${SPARK_WO
 srun --label --export=ALL --wait=0 "${SCRATCH}/sparkworker.sh" &
 WORKERS_PID=$!
 echo "WORKERS_PID=${WORKERS_PID}"
+echo "export WORKERS_PID=${WORKERS_PID}" >> ${SPARK_CONF_DIR}/spark-env.sh

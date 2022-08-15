@@ -9,8 +9,9 @@
 #SBATCH --time=00:60:00
 #SBATCH --mail-type=NONE
 
-# These modules are required.
-module load spark python3.8-anaconda pyarrow
+# These modules are required. You may need to customize the module version
+# depending on which cluster you are on.
+module load spark/3.2.1 python/3.10.4 pyarrow/8.0.0
 
 # Start the Spark instance.
 spark-start
