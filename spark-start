@@ -1,7 +1,13 @@
 #!/bin/bash
 
-if [[ -z "${SLURM_JOB_ID}" ]]; then
-  echo "Error: This script should only be called from slurm script. It appears this is not a slurm job."
+if [[ -z "${SLURM_JOB_ID}" || -z "${SLURM_CPUS_PER_TASK}" || -z "${SLURM_MEM_PER_NODE}" || -z "${SLURM_JOB_NUM_NODES}" ]]; then
+  echo "Error: Some expected slurm environment variables are missing."
+  echo "Note this script should only be called from a slurm script. Perhaps you are trying to run the spark-start script outside of a slurm job."
+  echo "Env var values:"
+  echo "  SLURM_JOB_ID=${SLURM_JOB_ID}"
+  echo "  SLURM_CPUS_PER_TASK=${SLURM_CPUS_PER_TASK}"
+  echo "  SLURM_MEM_PER_NODE=${SLURM_MEM_PER_NODE}"
+  echo "  SLURM_JOB_NUM_NODES=${SLURM_JOB_NUM_NODES}"
   exit 1
 fi
 
