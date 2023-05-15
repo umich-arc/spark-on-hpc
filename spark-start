@@ -232,7 +232,7 @@ sed -i "s/SPARK_WORKER_CORES=${SPARK_WORKER_CORES}/SPARK_WORKER_CORES=${SPARK_WO
     "${SCRATCH}/sparkworker.sh"
 
 # Start the worker nodes.
-srun --label --export=ALL --wait=0 "${SCRATCH}/sparkworker.sh" &
+srun --label --export=ALL --wait=0 --cpus-per-task=${SLURM_CPUS_PER_TASK} "${SCRATCH}/sparkworker.sh" &
 WORKERS_PID=$!
 echo "WORKERS_PID=${WORKERS_PID}"
 echo "export WORKERS_PID=${WORKERS_PID}" >> ${SPARK_CONF_DIR}/spark-env.sh
