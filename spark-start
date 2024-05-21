@@ -1,8 +1,13 @@
 #!/bin/bash
 
+################################################################################
+# Test for Slurm environment variables
+################################################################################
+
 if [[ -z "${SLURM_JOB_ID}" || -z "${SLURM_CPUS_PER_TASK}" || -z "${SLURM_MEM_PER_NODE}" || -z "${SLURM_JOB_NUM_NODES}" ]]; then
-  echo "Error: Some expected slurm environment variables are missing."
+  echo "ERROR: Some expected slurm environment variables are missing."
   echo "Note this script should only be called from a slurm script. Perhaps you are trying to run the spark-start script outside of a slurm job."
+  echo ""
   echo "Env var values:"
   echo "  SLURM_JOB_ID=${SLURM_JOB_ID}"
   echo "  SLURM_CPUS_PER_TASK=${SLURM_CPUS_PER_TASK}"
@@ -15,7 +20,19 @@ fi
 # Set up and launch standalone Spark cluster
 ################################################################################
 
-module load spark/3.2.1 python/3.10.4 pyarrow/8.0.0
+# Check that both Spark and Python3 are available.
+if ! command -v spark-submit >/dev/null 2>&1 || ! command -v python3 >/dev/null 2>&1; then
+  echo "ERROR: Cannot start Spark cluster because Spark or Python3 are not found."
+  echo "Tip: Load spark and python before calling spark-start script. For example:"
+  echo ""
+  echo "$ module load spark/3.5.1 python/3.12"
+  echo "$ spark-start"
+  echo ""
+  echo "As a workaround, spark/3.2.1 and python/3.10.4 will be autoloaded."
+  echo "This may create unexpected behavior that can be avoided by loading the"
+  echo "spark and python modules of your choice before calling spark-start."
+  module load spark/3.2.1 python/3.10.4 pyarrow/8.0.0
+fi
 
 # Set up standalone cluster daemon properties. The spark master and spark worker
 # processes will run with the resources defined here.
