@@ -114,6 +114,10 @@ spark.ui.enabled                   true
 
 # Disable progress bar in console.
 spark.ui.showConsoleProgress       false
+
+# Use proxy server for downloading additional, user-specified jars.
+spark.driver.extraJavaOptions     -Dhttp.proxyHost=proxy1.arc-ts.umich.edu -Dhttp.proxyPort=3128 -Dhttps.proxyHost=proxy1.arc-ts.umich.edu -Dhttps.proxyPort=3128
+spark.executor.extraJavaOptions   -Dhttp.proxyHost=proxy1.arc-ts.umich.edu -Dhttp.proxyPort=3128 -Dhttps.proxyHost=proxy1.arc-ts.umich.edu -Dhttps.proxyPort=3128
 EOF
 
 # Create spark-env config file.
