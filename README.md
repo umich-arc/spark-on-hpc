@@ -49,6 +49,22 @@ To account for these overhead processes, the `spark-start` script configures the
 
 In the example above, this would leave 70 cpu cores and 350g memory available for the executors of a spark job. The command `spark-submit --master ${SPARK_MASTER_URL} --executor-cores 1 --executor-memory 5G --total-executor-cores 70 ...` would start a spark job that consumes all available resources. The command launches 70 containers where each container uses 1 cpu core and 5g memory.
 
+## Using Spark with R Language
+
+You can use R with Spark on the HPC clusters. For an example, see the `batch-job-with-R.sh`. The process is identical to using Python with Spark, but replacing the Python module with an R module before running the `spark-start` script.
+
+```bash
+# Copy and customize the slurm job script to match your needs.
+cp /sw/examples/spark/spark-on-hpc/batch-job-with-R.sh ~/batch-job-with-R.sh
+vi ~/batch-job-with-R.sh
+
+# Run the slurm job script which will start the cluster then run your Spark job.
+sbatch ~/batch-job-with-R.sh
+
+# Optionally, view slurm output as the job runs.
+tail -f slurm*.out
+```
+
 ## Security
 
 The `spark-start` script enables RPC authentication to protect the spark service.
