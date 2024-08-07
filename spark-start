@@ -199,9 +199,9 @@ if [ $? -ne 0 ]; then
     echo "Output of the start script was: ${START_OUTPUT}"
     exit 1
 fi
-echo "Spark master started."
+echo "Spark master start script finished."
 echo "Output of the start script was: ${START_OUTPUT}"
-SPARK_MASTER_LOG=$(echo ${START_OUTPUT} | sed 's/^.*logging to //')
+SPARK_MASTER_LOG=$(ls -1 ${SPARK_LOG_DIR}/*master*.out | head -n 1)
 echo "SPARK_MASTER_LOG: ${SPARK_MASTER_LOG}"
 
 # Wait here until master starts and logs its URL. There is sometimes a
@@ -210,8 +210,19 @@ LOOP_COUNT=0
 while ! grep -q "started at http://" ${SPARK_MASTER_LOG}; do
     echo -n ".."
     sleep 2
-    if [ ${LOOP_COUNT} -gt 30 ]; then
-        echo "Error: Spark Master did not start."
+    if [ ${LOOP_COUNT} -gt 300 ]; then
+        echo "Error: Spark Master did not start. Web UI address not found in master log."
+        exit 1
+    fi
+    LOOP_COUNT=$(( LOOP_COUNT + 1 ))
+done
+
+LOOP_COUNT=0
+while ! grep -q "spark://" ${SPARK_MASTER_LOG}; do
+    echo -n ".."
+    sleep 2
+    if [ ${LOOP_COUNT} -gt 300 ]; then
+        echo "Error: Spark Master did not start. Spark URL not found in master log."
         exit 1
     fi
     LOOP_COUNT=$(( LOOP_COUNT + 1 ))
