@@ -51,7 +51,23 @@ In the example above, this would leave 70 cpu cores and 350g memory available fo
 
 ## Using Spark with R Language
 
-You can use R with Spark on the HPC clusters. For an example, see the `batch-job-with-R.sh`. The process is identical to using Python with Spark, but replacing the Python module with an R module before running the `spark-start` script.
+You can use R with Spark on the HPC clusters by using the [SparkR package](https://spark.apache.org/docs/latest/sparkr.html). For interactive, exploratory data analysis in R, you can start an Open OnDemand Basic Desktop on one of the [HPC clusters](https://greatlakes.arc-ts.umich.edu/). Then open a terminal, and execute these commands.
+
+```
+module load spark R
+sparkR
+```
+
+The commands will load the version of Spark and R you specify, then start an R console connected to a local Spark instance. Note that this approach will not scale beyond a single HPC node, but it is a good way to develop and test code. Later, if additional resources are needed, you can submit the R code as a batch job.
+
+If you prefer RStudio for exploratory data analysis, you can start an Open OnDemand RStudio app on one of the [HPC clusters](https://greatlakes.arc-ts.umich.edu/). Configure the app to `load spark/3.5` to load the spark module. Once the RStudio app has started, load the SparkR package and start a local Spark instance with these commands.
+
+```
+library(SparkR, lib.loc = c(file.path(Sys.getenv("SPARK_HOME"), "R", "lib")))
+sparkR.session(master = "local[*]")
+```
+
+If you have developed your code, but you need more resources than are provided by a single compute node, you can scale out the application by submiting it as a batch slurm job. Save your R code to a `.R` file. Make a copy of `batch-job-with-R.sh` then customize it with the location of your R code, your slurm account, and the compute resources you need. Then submit the slurm job with these commands.
 
 ```bash
 # Copy and customize the slurm job script to match your needs.
