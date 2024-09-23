@@ -67,7 +67,7 @@ library(SparkR, lib.loc = c(file.path(Sys.getenv("SPARK_HOME"), "R", "lib")))
 sparkR.session(master = "local[*]")
 ```
 
-If you have developed your code, but you need more resources than are provided by a single compute node, you can scale out the application by submiting it as a batch slurm job. Save your R code to a `.R` file. Make a copy of `batch-job-with-R.sh` and specify your R code in the `spark-submit` command. Modify the slurm account and requested resources as needed. Then submit the slurm job with `sbatch batch-job-with-R.sh`.
+If you have developed your code, but you need more resources than are provided by a single compute node, you can scale out the application by submiting it as a batch slurm job. Save your R code to a `.R` file. Make a copy of `batch-job-with-R.sh` then customize it with the location of your R code, your slurm account, and the compute resources you need. Then submit the slurm job with these commands.
 
 ```bash
 # Copy and customize the slurm job script to match your needs.
