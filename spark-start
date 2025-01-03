@@ -241,7 +241,7 @@ echo "SPARK_MASTER_URL: ${SPARK_MASTER_URL}"
 echo "SPARK_MASTER_WEBUI: ${SPARK_MASTER_WEBUI}"
 
 # Create a worker starter script for non-daemonized spark workers.
-cat > ${SCRATCH}/tmp/sparkworker.sh <<EOF
+cat > ${SPARK_CONF_DIR}/sparkworker.sh <<EOF
 #!/bin/bash
 ulimit -u 16384 -n 16384
 export SPARK_CONF_DIR=${SPARK_CONF_DIR}
@@ -252,10 +252,10 @@ exec spark-class org.apache.spark.deploy.worker.Worker "${SPARK_MASTER_URL}" &> 
 EOF
 
 # Broadcast the worker script to all slurm nodes.
-chmod +x ${SCRATCH}/tmp/sparkworker.sh
-sbcast ${SCRATCH}/tmp/sparkworker.sh "${SCRATCH}/sparkworker.sh" \
+chmod +x ${SPARK_CONF_DIR}/sparkworker.sh
+srun cp ${SPARK_CONF_DIR}/sparkworker.sh "${SCRATCH}/sparkworker.sh" \
     || fail "Could not broadcast worker start script to nodes"
-rm -f ${SCRATCH}/tmp/sparkworker.sh
+rm -f ${SPARK_CONF_DIR}/sparkworker.sh
 
 # Modify the worker script on the node that will run the spark driver. Reduce
 # the resources requested by the worker to leave resources for the driver.
