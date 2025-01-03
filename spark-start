@@ -253,7 +253,7 @@ EOF
 
 # Broadcast the worker script to all slurm nodes.
 chmod +x ${SPARK_CONF_DIR}/sparkworker.sh
-srun cp ${SPARK_CONF_DIR}/sparkworker.sh "${SCRATCH}/sparkworker.sh" \
+srun /usr/bin/cp ${SPARK_CONF_DIR}/sparkworker.sh "${SCRATCH}/sparkworker.sh" \
     || fail "Could not broadcast worker start script to nodes"
 rm -f ${SPARK_CONF_DIR}/sparkworker.sh
 
