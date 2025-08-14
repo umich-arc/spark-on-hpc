@@ -51,7 +51,9 @@ In the example above, this would leave 70 cpu cores and 350g memory available fo
 
 ## Using Spark with R Language
 
-You can use R with Spark on the HPC clusters by using the [SparkR package](https://spark.apache.org/docs/latest/sparkr.html). For interactive, exploratory data analysis in R, you can start an Open OnDemand Basic Desktop on one of the [HPC clusters](https://greatlakes.arc-ts.umich.edu/). Then open a terminal, and execute these commands.
+Note that SparkR is deprecated in Spark 4 (released May 2025) and will be removed starting with Spark 5. The Spark project owners recommend using `sparklyr` as a replacement. If you have an interest in trying `sparklyr`, please let us at ARC know (4HELP@umich.edu), and we will explore making the library available with the Spark installation on the HPC clusters.
+
+Until that time, you can use R with Spark on the HPC clusters by using the [SparkR package](https://spark.apache.org/docs/latest/sparkr.html). For interactive, exploratory data analysis in R, you can start an Open OnDemand Basic Desktop on one of the [HPC clusters](https://greatlakes.arc-ts.umich.edu/). Then open a terminal, and execute these commands.
 
 ```
 module load spark R
